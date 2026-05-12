@@ -99,7 +99,7 @@ export function LeadCaptureModal({
           />
 
           <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-            We'll send you your audit results and, if applicable, discuss Credex's discounted credit programs.
+            We&apos;ll send you your audit results and, if applicable, discuss Credex&apos;s discounted credit programs.
           </div>
 
           <div className="flex gap-3">

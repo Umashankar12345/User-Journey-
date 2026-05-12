@@ -1,5 +1,4 @@
-'use client';
-
+import { useState, useEffect } from 'react';
 import { AuditFinding } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from './Button';
@@ -11,6 +10,7 @@ interface AuditResultsProps {
   yearlySavings: number;
   auditId: string;
   onCaptureLead: () => void;
+  isReadOnly?: boolean;
 }
 
 export function AuditResults({
@@ -20,8 +20,43 @@ export function AuditResults({
   yearlySavings,
   auditId,
   onCaptureLead,
+  isReadOnly = false,
 }: AuditResultsProps) {
+  const [summary, setSummary] = useState<string>('');
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
   const savingsPercentage = totalCurrentSpend > 0 ? ((totalSavings / totalCurrentSpend) * 100).toFixed(1) : 0;
+
+  useEffect(() => {
+    async function fetchSummary() {
+      setIsLoadingSummary(true);
+      try {
+        const response = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ findings }),
+        });
+        const data = await response.json();
+        setSummary(data.summary);
+      } catch (error) {
+        console.error('Failed to fetch summary:', error);
+      } finally {
+        setIsLoadingSummary(false);
+      }
+    }
+
+    if (findings.length > 0) {
+      fetchSummary();
+    }
+  }, [findings]);
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/audit/${auditId}`;
+    navigator.clipboard.writeText(url);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -51,6 +86,33 @@ export function AuditResults({
 
   return (
     <div className="space-y-8">
+      {/* AI Summary */}
+      <div className="bg-white border border-credex-200 rounded-lg p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900">AI Optimization Summary</h3>
+          <button
+            onClick={handleCopyLink}
+            className={`text-xs px-3 py-1 rounded transition-colors ${
+              copySuccess ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {copySuccess ? '✓ Link Copied' : '🔗 Copy Share Link'}
+          </button>
+        </div>
+        
+        {isLoadingSummary ? (
+          <div className="animate-pulse space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          </div>
+        ) : summary ? (
+          <p className="text-gray-700 leading-relaxed italic">&ldquo;{summary}&rdquo;</p>
+        ) : (
+          <p className="text-gray-500 italic">No summary available. Check your tool configurations for better results.</p>
+        )}
+      </div>
+
       {/* Hero Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-credex-50 border-2 border-credex-600 rounded-lg p-6">
@@ -154,9 +216,11 @@ export function AuditResults({
             With ${totalSavings.toLocaleString()}/month in savings, Credex can help you capture this value through discounted credits and optimized procurement.
           </p>
         )}
-        <Button onClick={onCaptureLead} className="bg-white text-credex-900 hover:bg-gray-100">
-          Get Your Report & Consultation
-        </Button>
+        {!isReadOnly && (
+          <Button onClick={onCaptureLead} className="bg-white text-credex-900 hover:bg-gray-100">
+            Get Your Report & Consultation
+          </Button>
+        )}
       </div>
 
       {/* Audit ID */}

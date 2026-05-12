@@ -29,7 +29,7 @@ describe('Audit Engine', () => {
       {
         tool: 'claude',
         plan: 'Pro',
-        monthlySpend: 80, // 4 users × $20
+        monthlySpend: 120, // 4 users paying more than Team tier cost
         seats: 4,
         useCase: 'coding',
       },

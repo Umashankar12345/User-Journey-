@@ -199,7 +199,7 @@ function auditChatGPT(input: ToolInput): AuditFinding[] {
   // Check: Enterprise consolidation
   if (
     input.plan.toLowerCase() === 'enterprise' &&
-    input.monthlySpend > 600 &&
+    input.monthlySpend >= 600 &&
     input.seats <= 5
   ) {
     const claudeTeamCost = input.seats * 25;

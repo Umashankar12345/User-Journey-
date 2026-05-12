@@ -51,7 +51,23 @@ export default function Home() {
       const metrics = calculateMetrics(findings);
       const auditId = generateAuditSlug();
 
-      // Save audit to backend (optional - for now just local state)
+      // Save audit to backend
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: auditId,
+          inputs: formInputs,
+          findings,
+          totalCurrentSpend: metrics.totalCurrentSpend,
+          totalPotentialSavings: metrics.totalSavings,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to save audit to database');
+      }
+
       setAuditState({
         inputs: formInputs,
         findings,
