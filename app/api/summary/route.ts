@@ -47,7 +47,7 @@ Write a compelling summary that:
 `;
 
     const message = await client.messages.create({
-      model: 'claude-opus-4-20250514',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 200,
       messages: [
         {
